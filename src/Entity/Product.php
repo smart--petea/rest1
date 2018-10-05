@@ -65,7 +65,7 @@ class Product
 
     public function getDescription(): ?string
     {
-        return $this->text;
+        return $this->description;
     }
 
     public function setDescription(string $text): self
