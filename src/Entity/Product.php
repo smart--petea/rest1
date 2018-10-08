@@ -100,7 +100,7 @@ class Product
         return $this->category_id;
     }
 
-    public function setCategoryId(int $category_id): self
+    public function setCategoryId(?int $category_id): self
     {
         $this->category_id = $category_id;
 
@@ -129,5 +129,11 @@ class Product
         $this->modified = $modified;
 
         return $this;
+    }
+
+    public function __construct()
+    {
+        $this->created = new \DateTime();
+        $this->modified = new \DateTime();
     }
 }

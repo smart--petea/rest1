@@ -38,8 +38,38 @@ class ApiController extends AbstractController
     /**
      * @Route("api/product", methods={"POST"})
      */
-    public function product_create(Request $request) {
-        //todo implement it
+    public function product_create(Request $request, ValidatorInterface $validator) {
+        $product = new Product();
+
+        $product->setName($request->get('name'));
+        $product->setDescription($request->get('description'));
+        $product->setPrice($request->get('price'));
+        $product->setCategoryId($request->get('category_id'));
+
+        $errors = $validator->validate($product);
+        if(count($errors) > 0) {
+            $errs = array();
+            foreach($errors as $err)
+            {
+                $errs[$err->getPropertyPath()] = $err->getMessage();
+            }
+
+
+            return new Response(
+                json_encode(
+                    array(
+                        'message' => 'Unable to create product.',
+                        'errs' => $errs
+                    )
+                )
+            );
+        }
+
+        $manager = $this->getDoctrine()->getManager();
+        $manager->persist($product);
+        $manager->flush();
+
+        return new Response(json_encode(array('message' => "Product was created.")));
     }
 
     /**
@@ -75,8 +105,20 @@ class ApiController extends AbstractController
 
         $errors = $validator->validate($product);
         if(count($errors) > 0) {
-            //todo transform $errors to json
-            return new Response((string) $errors);
+            $errs = array();
+            foreach($errors as $err)
+            {
+                $errs[$err->getPropertyPath()] = $err->getMessage();
+            }
+
+            return new Response(
+                json_encode(
+                    array(
+                        'message' => 'Could not update.',
+                        'errs' => $errs
+                    )
+                )
+            );
         }
 
         $this->getDoctrine()->getManager()->flush();
