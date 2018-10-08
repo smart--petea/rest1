@@ -158,10 +158,21 @@ class ApiController extends AbstractController
     /**
      * @Route("/api/product", name="api_read", methods={"GET"})
      */
-    public function product_get_all()
+    public function product_get_all(Request $request)
     {
+        $keywords = $request->query->get('keywords');
         $repository = $this->getDoctrine()->getRepository(Product::class);
-        $products = $repository->findall();
+        if(empty($keywords)) {
+            $products = $repository->findall();
+        } else {
+            $products = $repository
+                            ->createQueryBuilder('p')
+                            ->where('p.name like :keywords')
+                            ->orWhere('p.description like :keywords')
+                            ->setParameter('keywords', '%'.$keywords.'%')
+                            ->getQuery()
+                            ->getResult();
+        }
 
         $jsonProducts = array();
         foreach($products as $product)
