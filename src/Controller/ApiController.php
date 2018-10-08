@@ -36,6 +36,36 @@ class ApiController extends AbstractController
     }
 
     /**
+     * @Route("api/product/{id}", methods={"DELETE"})
+     */
+    public function product_delete(int $id)
+    {
+        $product = $this->getDoctrine()->getRepository(Product::class)->find($id);
+        if(empty($product))
+        {
+            return new Response(
+                json_encode(
+                    array(
+                        'message' => 'The product does not exist.'
+                    )
+                ),
+                404
+            );
+        }
+
+        $this->getDoctrine()->getManager()->remove($product);
+        $this->getDoctrine()->getManager()->flush();
+
+        return new Response(
+            json_encode(
+                array(
+                    'message' => 'Product was deleted.'
+                )
+            )
+        );
+    }
+
+    /**
      * @Route("api/product", methods={"POST"})
      */
     public function product_create(Request $request, ValidatorInterface $validator) {
