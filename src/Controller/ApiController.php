@@ -6,6 +6,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 use App\Form\ProductType;
 use App\Entity\Product;
@@ -13,9 +14,9 @@ use App\Entity\Product;
 class ApiController extends AbstractController
 {
     /**
-     * @Route("api/read/{id}", methods={"GET"})
+     * @Route("api/product/{id}", methods={"GET"})
      */
-    public function get_one(int $id)
+    public function product_get_one(int $id)
     {
         $product = $this->getDoctrine()->getRepository(Product::class)->find($id);
         if(empty($product))
@@ -35,49 +36,57 @@ class ApiController extends AbstractController
     }
 
     /**
-    * @Route("api/read/{id}", methods={"POST"})
+     * @Route("api/product", methods={"POST"})
      */
-    public function update_one(int $id, Request $request)
+    public function product_create(Request $request) {
+        //todo implement it
+    }
+
+    /**
+    * @Route("api/product/{id}", methods={"POST"})
+     */
+    public function product_update(int $id, Request $request, ValidatorInterface $validator)
     {
         $product = $this->getDoctrine()->getRepository(Product::class)->find($id);
         if(empty($product)) {
             throw $this->createNotFoundException( 'No product found for id ' . $id);
         }
 
-        $name = $request->get('name');
-        $description = $request->get('description');
-        $price = $request->get('price');
-        $category_id = $request->get('category_id');
 
-        if(!empty($name))
+        if(!empty($request->get('name')))
         {
-            $product->setName($name);
+            $product->setName($request->get('name'));
         }
 
-        if(!empty($description))
+        if(!empty($request->get('description')))
         {
-            $product->setDescription($description);
+            $product->setDescription($request->get('description'));
         }
 
-        if(!empty($category_id))
+        if(!empty($request->get('price')))
         {
-            $product->setCategoryId($category_id);
+            $product->setPrice($request->get('price'));
         }
 
-        if(!empty($price))
+        if(!empty($request->get('category_id')))
         {
-            $product->setPrice($price);
+            $product->setCategoryId($request->get('category_id'));
+        }
+
+        $errors = $validator->validate($product);
+        if(count($errors) > 0) {
+            //todo transform $errors to json
+            return new Response((string) $errors);
         }
 
         $this->getDoctrine()->getManager()->flush();
-
         return new Response(json_encode(array('message' => 'Product was updated.')));
     }
 
     /**
-     * @Route("/api/read", name="api_read", methods={"GET"})
+     * @Route("/api/product", name="api_read", methods={"GET"})
      */
-    public function read()
+    public function product_get_all()
     {
         $repository = $this->getDoctrine()->getRepository(Product::class);
         $products = $repository->findall();
@@ -97,5 +106,4 @@ class ApiController extends AbstractController
 
         return new Response(json_encode($jsonProducts));
     }
-
 }
